@@ -26,7 +26,6 @@ def prettyPrint(path, nodesVisited):
         dist += graph[path[i]][path[i+1]]
     print("Distance (km): " + str(dist)) 
 
-
 def bfs(startNode, endNode):
     queue = [(startNode, [startNode])]
     seen = set()
@@ -49,7 +48,7 @@ def ucs(startNode, endNode):
     seen = set()
     numOfNodesVisited = 0
     while len(queue) > 0:
-        weight, path, current = heappop(queue)
+        score, path, current = heappop(queue)
         if current in seen: continue
         seen.add(current)
         numOfNodesVisited += 1
@@ -58,7 +57,7 @@ def ucs(startNode, endNode):
                 path.append(neighbor)
                 return (path, numOfNodesVisited)
             if not neighbor in seen:
-                newWeight = weight + graph[current][neighbor]
+                newWeight = score + graph[current][neighbor]
                 newPath = [*path, neighbor]
                 heappush(queue, (newWeight, newPath, neighbor))
     return False
@@ -69,8 +68,7 @@ def astar(startNode, endNode):
     numOfNodesVisited = 0
     while len(queue) > 0:
         score, path, current = heappop(queue)
-        if current in seen:
-            continue
+        if current in seen: continue
         numOfNodesVisited += 1
         seen.add(current)
         score -= heur[current] # remove the last heuristic
@@ -85,8 +83,8 @@ def astar(startNode, endNode):
     return False
 
 print("\nBFS:")
-prettyPrint(*bfs(1025817038, 105012740))
+prettyPrint(*bfs(104779422, 105012740))
 print("\nUCS:")
-prettyPrint(*ucs(1025817038, 105012740))
+prettyPrint(*ucs(104779422, 105012740))
 print("\nA*:")
-prettyPrint(*astar(1025817038, 105012740))
+prettyPrint(*astar(104779422, 105012740))
