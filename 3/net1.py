@@ -21,50 +21,58 @@ import torch.optim as optim
 
 BATCH_SZ   = 4    # Batch size
 DIM_IN     = 2    # Input dimension          (2, for two XOR inputs)
-DIM_H      = 4    # Hidden layers dimensions (4 neurons per layer)
-DIM_OUT    = 1    # Output dimension         (1, for XOR output in (0,1))
-LEARN_RATE = 1e-3 # Learning rate of NN
-EPOCHS     = 3    # Number of training iterations for NN
+DIM_H      = 3    # Hidden layer dimensions
+DIM_OUT    = 2    # Output dimension         (2, for XOR output of 0 (index 0) or 1 (index 1) - one hot classification)
+LEARN_RATE = 0.1  # Learning rate of NN
+EPOCHS     = 1000  # Maximum allowed number of training iterations for NN
 
 
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
         self.fc1 = nn.Linear(DIM_IN, DIM_H)  # Input layer
-        self.fc2 = nn.Linear(DIM_H, DIM_H)   # Hidden layer 1
-        self.fc3 = nn.Linear(DIM_H, DIM_H)   # Hidden layer 2
-        self.fc4 = nn.Linear(DIM_H, DIM_OUT) # Output layer
+        self.fc2 = nn.Linear(DIM_H, DIM_H)   # Hidden layer
+        self.fc3 = nn.Linear(DIM_H, DIM_OUT) # Output layer
 
     def forward(self, x):
-        x = F.relu(self.fc1(x)) # Forward pass through all the layers
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)         # Don't want to ReLU the last layer
-        return F.log_softmax(x, dim=1)
+        x = x.view(-1, DIM_IN)
+        x = torch.sigmoid(self.fc1(x)) # Forward pass through all the layers
+        x = torch.sigmoid(self.fc2(x))
+        x = self.fc3(x)            # Don't want to ReLU the last layer
+        x = torch.sigmoid(x)
+        return x
 
 
 # Train the neural net
 def train(net, train_set):
     optimizer = optim.Adam(net.parameters(), lr=LEARN_RATE)
+    loss = torch.tensor([1])
+    epoch = 0
 
-    for epoch in range(EPOCHS):
+    while epoch <= EPOCHS and loss.item() > 0.01:
+        epoch = epoch + 1
 
-        print(f'\nEpoch #{epoch}')
         for data in train_set:
             sample = data[:2]
             label  = data[2:]
 
-            net.zero_grad()                      # Start gradient at zero
-            output = net(sample.view(-1, 2))     # Run the NN on the value
-            loss   = F.l1_loss(output[0], label) # Calculate how incorrect the NN was
-            print(loss)
-                             # TODO this is not working?
-            loss.backward()  # Backward propagate the loss
-            optimizer.step() # Adjust the weights based on the backprop
+            # print('sample:', sample)
+            # print('label :', label)
 
-            print('data  :', data)
-            print('output:', output.item())
-        print(f'Epoch #{epoch} loss:', loss.item())
+            output = net(sample.view(-1, 2))      # Run the NN on the value
+            loss   = F.mse_loss(output[0], label) # Calculate how incorrect the NN was
+
+            optimizer.zero_grad() # Start gradient at zero
+            loss.backward()       # Backward propagate the loss
+            optimizer.step()      # Adjust the weights based on the backprop
+
+            # print('data  :', data)
+            # print('output:', output.item())
+
+        if epoch is 0 or (epoch + 1) % 10 is 0:
+            print(f'Epoch #{str(epoch+1).ljust(2)} loss: {loss.item()}')
+
+    print(f'Epoch #{str(epoch+1).ljust(2)} loss: {loss.item()}')
 
 # Test the neural net
 def test(net, test_set):
@@ -72,21 +80,21 @@ def test(net, test_set):
     print('\nTest output:')
     with torch.no_grad():
         for data in test_set:
-            print('data:', data)
+            # print('data:', data)
             sample = data[:2]
             label  = data[2:]
 
-            output = net(sample.view(-1, DIM_IN))
+            output = torch.argmax(net(sample.view(-1, DIM_IN)))
 
             print('Input : ', sample)
-            print('Output: ', output)
+            print('Output: ', output.item())
             print()
 
 
 # The actual code (not functions) begins here
-test_set  = torch.tensor([(0,0,0), (0,1,1), (1,0,1), (1,1,0)], dtype=torch.float32)
-train_set = torch.tensor([(0,0,0), (0,1,1), (1,0,1), (1,1,0)], dtype=torch.float32)
-np.random.shuffle(train_set) # TODO it is not shuffling the first entry for some reason
+test_set  = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
+train_set = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
+# np.random.shuffle(train_set) # TODO it is not shuffling the values correctly for some reason
 
 print('\ntest_set:\n', test_set)
 print('\ntrain_set:\n', train_set) 
