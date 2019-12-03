@@ -35,10 +35,11 @@ TRAIN_BATCH_SZ = 200   # Batch size for train / test sets
 TEST_BATCH_SZ  = 10
 MAX_X_VALUE    = 50    # Maximum value for x for y = x^2
 
-DIM_IN     = 1     # Input dimension   (1, for the value of x)
-DIM_OUT    = 1     # Output dimension  (1, for the value of y = x^2)
+DIM_IN     = 1     # Input dimension        (1, for the value of x)
+DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
+DIM_OUT    = 1     # Output dimension       (1, for the value of y = x^2)
 
-LEARN_RATE = 0.02   # Learning rate of NN
+LEARN_RATE = 0.02  # Learning rate of NN
 EPOCHS     = 20    # Maximum allowed number of training iterations for NN
 
 
@@ -49,10 +50,10 @@ Class definition of the x^2 neural net
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(DIM_IN, 4)  # Input layer
-        self.fc2 = nn.Linear(4, 8)       # Hidden layer
-        self.fc3 = nn.Linear(8, 8)       # Hidden layer
-        self.fc4 = nn.Linear(8, DIM_OUT) # Output layer
+        self.fc1 = nn.Linear(DIM_IN, DIM_H)   # Input layer
+        self.fc2 = nn.Linear(DIM_H, DIM_H**2)       # Hidden layer
+        self.fc3 = nn.Linear(DIM_H**2, DIM_H**2)      # Hidden layer
+        self.fc4 = nn.Linear(DIM_H**2, DIM_OUT) # Output layer
 
     def forward(self, x):
         x = x.view(-1, DIM_IN)
@@ -62,7 +63,6 @@ class Net(nn.Module):
         x = torch.relu(self.fc3(x))
         x = self.fc4(x)             # Don't want to ReLU the last layer
         return x
-        #return F.log_softmax(x, dim=1)
 
 
 
@@ -74,15 +74,12 @@ def train(net, train_set):
     loss  = torch.tensor([1])
     epoch = 0
 
-    while epoch <= EPOCHS:
+    while epoch < EPOCHS:
         epoch = epoch + 1
 
         for data in train_set:
             sample = data[:1]
             label  = data[1:]
-
-            # print('sample:', sample)
-            # print('label :', label)
 
             output = net(sample.view(-1, 1))            # Run the NN on the value
             loss   = F.smooth_l1_loss(output[0], label) # Calculate how incorrect the NN was
@@ -91,13 +88,7 @@ def train(net, train_set):
             loss.backward()       # Backward propagate the loss
             optimizer.step()      # Adjust the weights based on the backprop
 
-            # print('data  :', data)
-            # print('output:', output.item())
-
-            # if epoch is 0 or (epoch + 1) % 2 is 0:
         print(f'Epoch #{str(epoch).ljust(2)} loss: {round(loss.item(), 3)}')
-
-    # print(f'Epoch #{str(epoch).ljust(2)} loss: {round(loss.item(), 3)}')
 
 
 
@@ -106,7 +97,6 @@ Basic test of the neural net
 '''
 def test(net, test_set):
 
-    running_diff = 0
     diffs = []
 
     print('\nTest output:')
@@ -117,19 +107,17 @@ def test(net, test_set):
             label  = data[1]
             output = net(sample.view(-1, DIM_IN))
             diff   = abs((output.item() - label.item())/label.item()) * 100
-            running_diff += diff
             diffs.append(diff)
 
-            print('\nInput : ', round(sample.item(), 3))
-            print('Output: ', round(output.item(), 3))
-            print('Actual: ', round(label.item(), 3))
-            print(f'Difference: {round(diff, 3)}%')
+            print(f'\ninput  : {round(sample.item(), 3)}')
+            print(f'output : {round(output.item(), 3)}')
+            print(f'actual : {round(label.item(), 3)}')
+            print(f'% diff : {round(diff, 3)}%')
     
-    diffs.sort()
-    med_diff = round(diffs[math.floor(len(diffs)/2)], 3)
-    avg_diff = round(running_diff/len(diffs), 3)
-    print(f'\nMedian Difference: {med_diff}%')
-    print(f'Avg difference: {avg_diff}%')
+    med_diff = round(np.median(diffs), 3)
+    avg_diff = round(np.average(diffs), 3)
+    print(f'\nmedian  % diff : {med_diff}%')
+    print(f'average % diff : {avg_diff}%')
 
 
 
