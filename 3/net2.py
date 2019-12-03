@@ -19,6 +19,7 @@ Input | Expected output
 '''
 
 import numpy as np     # Numpy dependency
+import math
 import torch           # Pytorch dependenices
 import torch.nn as nn
 import torch.nn.functional as F
@@ -29,7 +30,7 @@ BATCH_SZ   = 10    # Batch size
 DIM_IN     = 1     # Input dimension          (1, for the value of x)
 DIM_H      = 8     # Hidden layer dimensions
 DIM_OUT    = 1     # Output dimension         (1, for the value of y = x^2)
-LEARN_RATE = 0.1   # Learning rate of NN
+LEARN_RATE = 0.02   # Learning rate of NN
 EPOCHS     = 20    # Maximum allowed number of training iterations for NN
 
 
@@ -87,6 +88,7 @@ def train(net, train_set):
 def test(net, test_set):
 
     running_diff = 0
+    diffs = []
 
     print('\nTest output:')
     with torch.no_grad():
@@ -97,13 +99,18 @@ def test(net, test_set):
             output = net(sample.view(-1, DIM_IN))
             diff   = abs((output.item() - label.item())/label.item()) * 100
             running_diff += diff
+            diffs.append(diff)
 
             print('\nInput : ', round(sample.item(), 3))
             print('Output: ', round(output.item(), 3))
             print('Actual: ', round(label.item(), 3))
             print(f'Difference: {round(diff, 3)}%')
     
-    print(f'\nAvg difference: {round(running_diff/len(test_set), 3)}%')
+    diffs.sort()
+    med_diff = round(diffs[math.floor(len(diffs)/2)], 3)
+    avg_diff = round(running_diff/len(diffs), 3)
+    print(f'\nMedian Difference: {med_diff}%')
+    print(f'Avg difference: {avg_diff}%')
 
 # Generates a batch_size long tensor with the values
 # for x and x^2, with the range for x being [-max_x, max_x]
