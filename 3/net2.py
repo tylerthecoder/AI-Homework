@@ -31,9 +31,9 @@ import random          # Python dependency
 '''
 Constants for the net, training, and testing
 '''
-TRAIN_BATCH_SZ = 200   # Batch size for train / test sets
+TRAIN_BATCH_SZ = 200  # Batch size for train / test sets
 TEST_BATCH_SZ  = 10
-MAX_X_VALUE    = 50    # Maximum value for x for y = x^2
+MAX_X_VALUE    = 50   # Maximum value for x for y = x^2
 
 DIM_IN     = 1     # Input dimension        (1, for the value of x)
 DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
@@ -99,7 +99,6 @@ def test(net, test_set):
 
     diffs = []
 
-    print('\nTest output:')
     with torch.no_grad():
         for data in test_set:
 
@@ -156,10 +155,17 @@ test_set  = generate_set(TEST_BATCH_SZ, MAX_X_VALUE)
 net = Net()
 
 print('\nNet: ', net)
-print('\nTraining Set: ', set)
-print('\nTesting Set: ', set)
+print('\nTraining Set: ', train_set)
+print('\nTesting Set: ', test_set)
+print()
 
+print('\n--- Before training: ---')
+test(net, test_set)
+
+print("\n--- Training now: ---\n")
 train(net, train_set)
+
+print("\n--- After training: ---")
 test(net, test_set)
 # fancy_test(net)
 

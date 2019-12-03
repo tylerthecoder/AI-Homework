@@ -30,8 +30,9 @@ DIM_IN     = 2    # Input dimension          (2, for two XOR inputs)
 DIM_H      = 16   # Hidden layer dimensions
 DIM_OUT    = 2    # Output dimension         (2, for XOR output of 0 (index 0) or 1 (index 1) - one hot classification)
 
-LEARN_RATE = 0.1   # Learning rate of NN
-EPOCHS     = 1000  # Maximum allowed number of training iterations for NN
+LEARN_RATE  = 0.02  # Learning rate of NN
+CUTOFF_LOSS = 0.01  # During training, if loss reaches at or below this value, stop training
+EPOCHS      = 1000  # Maximum allowed number of training iterations for NN
 
 
 
@@ -62,7 +63,7 @@ def train(net, train_set):
     loss = torch.tensor([1])
     epoch = 0
 
-    while epoch <= EPOCHS and loss.item() > 0.01:
+    while epoch < EPOCHS and loss.item() > CUTOFF_LOSS:
         epoch = epoch + 1
 
         for data in train_set:
@@ -82,10 +83,7 @@ def train(net, train_set):
             # print('data  :', data)
             # print('output:', output.item())
 
-        if epoch is 0 or (epoch + 1) % 10 is 0:
-            print(f'Epoch #{str(epoch+1).ljust(2)} loss: {round(loss.item(), 3)}')
-
-    print(f'Epoch #{str(epoch+1).ljust(2)} loss: {round(loss.item(), 3)}')
+        print(f'Epoch #{str(epoch).ljust(2)} loss: {round(loss.item(), 3)}')
 
 
 
@@ -94,7 +92,6 @@ Basic test of the neural net
 '''
 def test(net, test_set):
 
-    print('\nTest output:')
     with torch.no_grad():
         for data in test_set:
             # print('data:', data)
@@ -121,7 +118,6 @@ Actual code (not functions) begins here
 '''
 test_set  = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
 train_set = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
-# np.random.shuffle(train_set) # TODO it is not shuffling the values correctly for some reason
 
 net = Net()
 
@@ -129,6 +125,12 @@ print('\nNet: ', net)
 print('\nTraining Set:\n', train_set) 
 print('\nTesting Set:\n', test_set)
 
+print("\n--- Before training: ---")
+test(net, test_set)
+
+print("\n--- Training now: ---\n")
 train(net, train_set)
+
+print("\n--- After training: ---")
 test(net, test_set)
 # fancy_test(net)
