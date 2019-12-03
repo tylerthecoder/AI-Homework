@@ -21,7 +21,7 @@ import torch.optim as optim
 
 BATCH_SZ   = 4    # Batch size
 DIM_IN     = 2    # Input dimension          (2, for two XOR inputs)
-DIM_H      = 3    # Hidden layer dimensions
+DIM_H      = 16    # Hidden layer dimensions
 DIM_OUT    = 2    # Output dimension         (2, for XOR output of 0 (index 0) or 1 (index 1) - one hot classification)
 LEARN_RATE = 0.1  # Learning rate of NN
 EPOCHS     = 1000  # Maximum allowed number of training iterations for NN
@@ -36,10 +36,9 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = x.view(-1, DIM_IN)
-        x = torch.sigmoid(self.fc1(x)) # Forward pass through all the layers
-        x = torch.sigmoid(self.fc2(x))
+        x = F.relu(self.fc1(x)) # Forward pass through all the layers
+        x = F.relu(self.fc2(x))
         x = self.fc3(x)            # Don't want to ReLU the last layer
-        x = torch.sigmoid(x)
         return x
 
 
@@ -70,9 +69,9 @@ def train(net, train_set):
             # print('output:', output.item())
 
         if epoch is 0 or (epoch + 1) % 10 is 0:
-            print(f'Epoch #{str(epoch+1).ljust(2)} loss: {loss.item()}')
+            print(f'Epoch #{str(epoch+1).ljust(2)} loss: {round(loss.item(), 3)}')
 
-    print(f'Epoch #{str(epoch+1).ljust(2)} loss: {loss.item()}')
+    print(f'Epoch #{str(epoch+1).ljust(2)} loss: {round(loss.item(), 3)}')
 
 # Test the neural net
 def test(net, test_set):
@@ -101,6 +100,7 @@ print('\ntrain_set:\n', train_set)
 
 
 net = Net()
+
 print('\nNet: ', net)
 
 train(net, train_set)
