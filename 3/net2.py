@@ -18,7 +18,8 @@ Input | Expected output
  etc.    etc.
 '''
 
-import numpy as np     # Numpy dependency (CHECK IF USED)
+import numpy as np     # Numpy dependency
+import math
 import torch           # Pytorch dependenices
 import torch.nn as nn
 import torch.nn.functional as F
@@ -37,8 +38,8 @@ MAX_X_VALUE    = 50    # Maximum value for x for y = x^2
 DIM_IN     = 1     # Input dimension   (1, for the value of x)
 DIM_OUT    = 1     # Output dimension  (1, for the value of y = x^2)
 
-LEARN_RATE = 0.1   # Learning rate of NN
-EPOCHS     = 15    # Maximum allowed number of training iterations for NN
+LEARN_RATE = 0.02   # Learning rate of NN
+EPOCHS     = 20    # Maximum allowed number of training iterations for NN
 
 
 
@@ -106,6 +107,7 @@ Basic test of the neural net
 def test(net, test_set):
 
     running_diff = 0
+    diffs = []
 
     print('\nTest output:')
     with torch.no_grad():
@@ -116,13 +118,18 @@ def test(net, test_set):
             output = net(sample.view(-1, DIM_IN))
             diff   = abs((output.item() - label.item())/label.item()) * 100
             running_diff += diff
+            diffs.append(diff)
 
             print('\nInput : ', round(sample.item(), 3))
             print('Output: ', round(output.item(), 3))
             print('Actual: ', round(label.item(), 3))
             print(f'Difference: {round(diff, 3)}%')
     
-    print(f'\nAvg difference: {round(running_diff/len(test_set), 3)}%')
+    diffs.sort()
+    med_diff = round(diffs[math.floor(len(diffs)/2)], 3)
+    avg_diff = round(running_diff/len(diffs), 3)
+    print(f'\nMedian Difference: {med_diff}%')
+    print(f'Avg difference: {avg_diff}%')
 
 
 
