@@ -29,18 +29,19 @@ import torch.optim as optim
 import random          # Python dependency
 
 
-
 '''
 Constants for the net, training, and testing
 '''
-TRAIN_BATCH_SZ = 20  # Batch size for train / test sets
+TRAIN_BATCH_SZ = 20   # Batch size for train / test sets
 TEST_BATCH_SZ  = 30
 MAX_X_VALUE    = 50   # Maximum value for x for y = x^2
-DELTA_Y_VALUE  = 5    # Maximum divergence from x for y
+DELTA_Y_VALUE  = 1000 # Maximum divergence from x for y
+MIN_Y_DELTA    = 10   # y is at least this far away from x
 
-DIM_IN     = 2   # Input dimension            (1, for the value of x)
-DIM_H      = 8   # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
-DIM_OUT    = 2   # Output dimension           (One-hot classification [y < x^2, y = x^2, y > x^2])
+DIM_IN    = 2   # Input dimension            (1, for the value of x)
+DIM_H1    = 8   # 1st hidden layer dimension 
+DIM_H2    = 16  # 2st hidden layer dimension 
+DIM_OUT   = 2   # Output dimension           (One-hot classification [y < x^2, y = x^2, y > x^2])
 
 LEARN_RATE  = 0.01  # Learning rate of NN
 CUTOFF_LOSS = 0.01  # During training, if loss reaches at or below this value, stop training
@@ -53,17 +54,18 @@ Class definition of the x^2 neural net
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(DIM_IN, 8)   # Input layer
-        self.fc2 = nn.Linear(8, 8)    # Hidden layer
-        self.fc4 = nn.Linear(8, DIM_OUT)  # Output layer
+        self.fc1 = nn.Linear(DIM_IN, DIM_H1)   # Input layer
+        self.fc2 = nn.Linear(DIM_H1, DIM_H1)    # Hidden layer
+        self.fc3 = nn.Linear(DIM_H1, DIM_H2)
+        self.fc4 = nn.Linear(DIM_H2, DIM_OUT)  # Output layer
 
     def forward(self, x):
         x = x.view(-1, DIM_IN)
         x = F.relu(self.fc1(x)) # Forward pass through all the layers
         x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
         x = self.fc4(x)             # Don't want to ReLU the last layer
         return x
-
 
 
 '''
@@ -146,16 +148,18 @@ TODO test again and graph using MatPlotLib
 Generates a batch_size long tensor with the values
 for x and x^2, with the range for x being [-max_x, max_x]
 '''
-def generate_set(batch_size, max_x, max_delta_y):
+def generate_set(batch_size):
     RAND_STEP = 0.001 # The granularity of the values in the test set
     set = torch.zeros(batch_size, 4, dtype=torch.float32)
 
     for i in range (0, batch_size):
         # Get a random value for x in the range [-max_x, max_x]
-        x = float(random.randrange(max_x * -1 / RAND_STEP, max_x / RAND_STEP))
+        x = float(random.randrange(MAX_X_VALUE * -1 / RAND_STEP, MAX_X_VALUE / RAND_STEP))
         x = x * RAND_STEP
 
-        y = float(random.randrange(max_delta_y * -1 / RAND_STEP, max_delta_y / RAND_STEP))
+        deltaY = DELTA_Y_VALUE - MIN_Y_DELTA
+
+        y = float(random.randrange(deltaY * -1 / RAND_STEP, deltaY / RAND_STEP)) + MIN_Y_DELTA
         y = ((y * RAND_STEP) + x) ** 2
 
         set[i][0] = x    # x
@@ -197,8 +201,8 @@ def print_set(set, batch_size):
 '''
 Actual code (not functions) begins here
 '''
-train_set = generate_set(TRAIN_BATCH_SZ, MAX_X_VALUE, DELTA_Y_VALUE)
-test_set  = generate_set(TEST_BATCH_SZ, MAX_X_VALUE, DELTA_Y_VALUE)
+train_set = generate_set(TRAIN_BATCH_SZ)
+test_set  = generate_set(TEST_BATCH_SZ)
 
 net = Net()
 
