@@ -18,6 +18,7 @@ import torch           # Pytorch dependenices
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import matplotlib.pyplot as plt
 
 
 
@@ -104,14 +105,110 @@ def test(net, test_set):
             print('Output: ', output.item())
             print()
 
+'''
+Generates a batch_size long tensor with the values
+for A and B between (0,1), and a label based on
+rounding A and B to the nearest whole number.
+'''
+def generate_set():
+    STEP = 0.01
+    test_set = torch.zeros(int(1/STEP)**2, 4, dtype=torch.float32)
 
+    for i in range(0, int(1/STEP)):
+        for j in range(0, int(1/STEP)):
+            test_set[i * int(1/STEP) + j][0] = i * STEP
+            test_set[i * int(1/STEP) + j][1] = j * STEP
+            
+            if i * STEP < 0.5:
+                if j * STEP < 0.5: # A = 0, B = 0 -> out = 0
+                    test_set[i * int(1/STEP) + j][2] = 1
+                    test_set[i * int(1/STEP) + j][3] = 0
+                else:       # A = 0, B = 1 -> out = 1
+                    test_set[i * int(1/STEP) + j][2] = 0
+                    test_set[i * int(1/STEP) + j][3] = 1
+            if j/STEP < 0.5:
+                if i/STEP < 0.5: # A = 1, B = 0 -> out = 1
+                    test_set[i * int(1/STEP) + j][2] = 0
+                    test_set[i * int(1/STEP) + j][3] = 1
+                else:       # A = 1, B = 0 -> out = 0
+                    test_set[i * int(1/STEP) + j][2] = 1
+                    test_set[i * int(1/STEP) + j][3] = 0
+
+    return test_set
+
+
+def fancy_test(net, title):
+
+    test_set = generate_set()
+    results = []
+
+    with torch.no_grad():
+        for data in test_set:
+            sample = data[:2]
+            label  = data[2:]
+
+            output = torch.argmax(net(sample.view(-1, DIM_IN)))
+            results.append([round(sample[0].item(), 5), round(sample[1].item(), 5), output.item()])
+
+
+    # plt.scatter(x = [item[0] for item in results], y = [item[1] for item in results], c = [item[2] for item in results], cmap = 'winter')
+    # plt.title(title)
+    # plt.xlabel('A')
+    # plt.ylabel('B')
+
+    # plt.axhline(0.5)
+    # plt.axvline(0.5)
+
+    # plt.xticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    # plt.xlim([0,1])
+
+    # plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    # plt.ylim([0,1])
+
+    # plt.show()
+
+    return results
 
 '''
-TODO test again and graph using MatPlotLib
+
 '''
-# def fancy_test(net):
+def fancy_plot(before_results, after_results):
 
+    plt.figure()
 
+    # Plot the test results before training
+    plt.subplot(1, 2, 1)
+    plt.scatter(x = [item[0] for item in before_results], y = [item[1] for item in before_results], c = [item[2] for item in before_results], cmap = 'winter')
+    plt.title('Before trianing')
+    plt.xlabel('A')
+    plt.ylabel('B')
+
+    plt.axhline(0.5)
+    plt.axvline(0.5)
+
+    plt.xticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    plt.xlim([0,1])
+
+    plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    plt.ylim([0,1])
+
+    # Plot the test results after training
+    plt.subplot(1, 2, 2)
+    plt.scatter(x = [item[0] for item in after_results], y = [item[1] for item in after_results], c = [item[2] for item in after_results], cmap = 'winter')
+    plt.title('After training')
+    plt.xlabel('A')
+    plt.ylabel('B')
+
+    plt.axhline(0.5)
+    plt.axvline(0.5)
+
+    plt.xticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    plt.xlim([0,1])
+
+    plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    plt.ylim([0,1])
+
+    plt.show()
 
 '''
 Actual code (not functions) begins here
@@ -125,12 +222,15 @@ print('\nNet: ', net)
 print('\nTraining Set:\n', train_set) 
 print('\nTesting Set:\n', test_set)
 
+generate_set()
+
 print("\n--- Before training: ---")
-test(net, test_set)
+before_results = fancy_test(net, 'Before training')
 
 print("\n--- Training now: ---\n")
 train(net, train_set)
 
 print("\n--- After training: ---")
-test(net, test_set)
-# fancy_test(net)
+after_results = fancy_test(net, 'After training')
+
+fancy_plot(before_results, after_results)
