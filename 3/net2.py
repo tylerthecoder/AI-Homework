@@ -34,7 +34,7 @@ Constants for the net, training, and testing
 TRAIN_BATCH_SZ = 300 # Batch size for training set
 TEST_BATCH_SZ  = 75  # Batch size for testing set
 
-MAX_X   = 50            # Maximum value for x for y = x^2     (training / basic test)
+MAX_X   = 15            # Maximum value for x for y = x^2     (training / basic test)
 DELTA_Y = 10            # Maximum that y can diverge from x^2 (training / basic test)
 
 FANCY_TEST_MAX_X = 15   # Maximum value of x for y = x^2            (fancy test)
@@ -219,10 +219,10 @@ def generate_orderly_set(max_x, step = 0.1):
 '''
 Generates a set of points using generate_orderly_set, then
 runs the neural net through each of them, labelling it with...
-- 1, if y > NN's estimate of x2
 - 0, if y <= NN's estimate of x2
+- 1, if y > NN's estimate of x2
 
-Returns the sets as a list with objects of the form [x, y, label]
+Returns the set as a list with objects of the form [x, y, label]
 '''
 def fancy_test(net, max_x, step):
     test_set = generate_orderly_set(max_x, step)
