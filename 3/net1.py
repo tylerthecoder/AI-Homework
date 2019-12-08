@@ -2,7 +2,7 @@
 File:    net1.py
 Authors: Tyler Tracy, Carson Molder
 Class:   CSCE 4613 Artificial Intelligence
-Date:    12/12/19
+Date:    12/8/19
 
 Neural network that implements the XOR function.
 
@@ -13,12 +13,13 @@ A  |  B  |  Expected
 1     1     0
 '''
 
-import numpy as np     # Numpy dependency
-import torch           # Pytorch dependenices
+import numpy as np              # Numpy dependency
+import torch                    # Pytorch dependenices
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # MatPlotLib dependency
+import itertools                # Python dependency
 
 
 
@@ -105,41 +106,27 @@ def test(net, test_set):
             print('Output: ', output.item())
             print()
 
+
+
 '''
 Generates a batch_size long tensor with the values
 for A and B between (0,1), and a label based on
 rounding A and B to the nearest whole number.
 '''
-def generate_set():
-    STEP = 0.01
-    test_set = torch.zeros(int(1/STEP)**2, 4, dtype=torch.float32)
-
-    for i in range(0, int(1/STEP)):
-        for j in range(0, int(1/STEP)):
-            test_set[i * int(1/STEP) + j][0] = i * STEP
-            test_set[i * int(1/STEP) + j][1] = j * STEP
-            
-            if i * STEP < 0.5:
-                if j * STEP < 0.5: # A = 0, B = 0 -> out = 0
-                    test_set[i * int(1/STEP) + j][2] = 1
-                    test_set[i * int(1/STEP) + j][3] = 0
-                else:       # A = 0, B = 1 -> out = 1
-                    test_set[i * int(1/STEP) + j][2] = 0
-                    test_set[i * int(1/STEP) + j][3] = 1
-            if j/STEP < 0.5:
-                if i/STEP < 0.5: # A = 1, B = 0 -> out = 1
-                    test_set[i * int(1/STEP) + j][2] = 0
-                    test_set[i * int(1/STEP) + j][3] = 1
-                else:       # A = 1, B = 0 -> out = 0
-                    test_set[i * int(1/STEP) + j][2] = 1
-                    test_set[i * int(1/STEP) + j][3] = 0
-
-    return test_set
+def generate_orderly_set(step = 0.01):
+    xvals = np.arange(0, 1 + step, step)
+    yvals = np.arange(0, 1 + step, step)
+    points = torch.Tensor(list(itertools.product(xvals, yvals)))
+    return points
 
 
+
+'''
+TODO description
+'''
 def fancy_test(net, title):
 
-    test_set = generate_set()
+    test_set = generate_orderly_set()
     results = []
 
     with torch.no_grad():
@@ -150,27 +137,12 @@ def fancy_test(net, title):
             output = torch.argmax(net(sample.view(-1, DIM_IN)))
             results.append([round(sample[0].item(), 5), round(sample[1].item(), 5), output.item()])
 
-
-    # plt.scatter(x = [item[0] for item in results], y = [item[1] for item in results], c = [item[2] for item in results], cmap = 'winter')
-    # plt.title(title)
-    # plt.xlabel('A')
-    # plt.ylabel('B')
-
-    # plt.axhline(0.5)
-    # plt.axvline(0.5)
-
-    # plt.xticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
-    # plt.xlim([0,1])
-
-    # plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
-    # plt.ylim([0,1])
-
-    # plt.show()
-
     return results
 
-'''
 
+
+'''
+TODO description
 '''
 def fancy_plot(before_results, after_results):
 
@@ -210,6 +182,8 @@ def fancy_plot(before_results, after_results):
 
     plt.show()
 
+
+
 '''
 Actual code (not functions) begins here
 '''
@@ -221,8 +195,6 @@ net = Net()
 print('\nNet: ', net)
 print('\nTraining Set:\n', train_set) 
 print('\nTesting Set:\n', test_set)
-
-generate_set()
 
 print("\n--- Before training: ---")
 before_results = fancy_test(net, 'Before training')

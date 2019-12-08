@@ -2,7 +2,7 @@
 File:    net2.py
 Authors: Tyler Tracy, Carson Molder
 Class:   CSCE 4613 Artificial Intelligence
-Date:    12/12/19
+Date:    12/8/19
 
 Neural network that implements the function y = x^2.
 
@@ -18,13 +18,14 @@ Input | Expected output
  etc.    etc.
 '''
 
-import numpy as np     # Numpy dependency
-import math
-import torch           # Pytorch dependenices
+import numpy as np              # Numpy dependency
+import torch                    # Pytorch dependenices
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import random          # Python dependency
+import matplotlib.pyplot as plt # MatPlotLib dependency
+import random                   # Python dependencies
+import itertools
 
 
 '''
@@ -33,14 +34,14 @@ Constants for the net, training, and testing
 TRAIN_BATCH_SZ = 300  # Batch size for training set
 TEST_BATCH_SZ  = 75   # Batch size for testing set
 MAX_X          = 50   # Maximum value for x for y = x^2
-DELTA_Y        = 100  # Maximum that y can diverge from x
+DELTA_Y        = 100  # Maximum that y can diverge from x^2
 
 DIM_IN     = 1     # Input dimension            (1, for the value of x)
 DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
 DIM_OUT    = 1     # Output dimension           (1, for the NN's estimate of x^2)
 
 LEARN_RATE = 0.02  # Learning rate of NN
-EPOCHS     = 100   # Maximum allowed number of training iterations for NN
+EPOCHS     = 40    # Maximum allowed number of training iterations for NN
 
 
 
@@ -168,24 +169,37 @@ def test(net, test_set):
     print(f'% x2 NN and label diff (average): {avg_diff}%')
 
 
+
+'''
+TODO description
+'''
 def print_set(set):
     print('yeet')
 
 
 '''
-TODO test again and graph using MatPlotLib
+TODO description
 '''
-# def fancy_test(net):
+def fancy_test(net):
+    print('implement me')
 
 
 
 '''
-Generates a batch_size long tensor with the values
+TODO description
+'''
+def fancy_plot(before_results, after_results):
+    print('implement me')
+
+
+
+'''
+Generates a batch_size long tensor with random values
 for x, y, (inputs) and x^2 (label)
 - range for x is [-max_x, max_x]
 - range for y is [x^2 - delta_y, x^2 + delta_y]
 '''
-def generate_set(batch_size, max_x, delta_y):
+def generate_random_set(batch_size, max_x, delta_y):
     RAND_STEP = 0.001 # The granularity of the values in the test set
     set = torch.zeros(batch_size, 3, dtype=torch.float32)
 
@@ -207,14 +221,31 @@ def generate_set(batch_size, max_x, delta_y):
     return set
 
 
+'''
+Generates an (x * y)-long tensor with the values
+representing points on the x-y plane.
+- range for x is [-max_x, max_x]
+- range for y is [0, max_x ^2]
+- step is the width (granularity) between points on the plane
+  for both the x and y axes
+'''
+def generate_orderly_set(max_x, step = 0.1):
+    xvals  = np.arange(-max_x, max_x + step, step)
+    yvals  = np.arange(0, max_x**2 + step, step)
+    points = torch.Tensor(list(itertools.product(xvals, yvals)))
+    return points
+
+
 
 '''
 Actual code (not functions) begins here
 '''
-train_set = generate_set(TRAIN_BATCH_SZ, MAX_X, DELTA_Y)
-test_set  = generate_set(TEST_BATCH_SZ, MAX_X, DELTA_Y)
+train_set = generate_random_set(TRAIN_BATCH_SZ, MAX_X, DELTA_Y)
+test_set  = generate_random_set(TEST_BATCH_SZ, MAX_X, DELTA_Y)
 
 net = Net()
+
+myset = generate_orderly_set(5, 0.1)
 
 print('\nNet: ', net)
 print('\nTraining Set: ', train_set)
@@ -230,4 +261,3 @@ train(net, train_set)
 print("\n--- After training: ---")
 test(net, test_set)
 # fancy_test(net)
-
