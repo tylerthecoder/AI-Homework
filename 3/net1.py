@@ -90,25 +90,6 @@ def train(net, train_set):
 
 
 '''
-Basic test of the neural net
-'''
-def test(net, test_set):
-
-    with torch.no_grad():
-        for data in test_set:
-            # print('data:', data)
-            sample = data[:2]
-            label  = data[2:]
-
-            output = torch.argmax(net(sample.view(-1, DIM_IN)))
-
-            print('Input : ', sample)
-            print('Output: ', output.item())
-            print()
-
-
-
-'''
 Generates a batch_size long tensor with the values
 for A and B between (0,1), and a label based on
 rounding A and B to the nearest whole number.
@@ -122,7 +103,13 @@ def generate_orderly_set(step = 0.01):
 
 
 '''
-TODO description
+Generates a set of points using generate_orderly_set, then
+runs the neural net through each of them, labelling it with
+the output from the NN's one-hot-vector classifier...
+- 0, if A xor B was estimated by the NN to be 0
+- 1, if A xor B was estimated by the NN to be 1
+
+Returns the set as a list of objects of the form [a, b, label]
 '''
 def fancy_test(net, title):
 
@@ -142,7 +129,13 @@ def fancy_test(net, title):
 
 
 '''
-TODO description
+Plots two graphs of the resulting set from fancy_test before
+and after training.
+
+If the point (A, B) has A xor B estimated to be 1, it is plotted as a green point
+If the point (A, B) has A xor B estimated to be 0, it is plotted as a blue point
+
+The graph's domain and range are [0, 1]
 '''
 def fancy_plot(before_results, after_results):
 

@@ -31,17 +31,21 @@ import itertools
 '''
 Constants for the net, training, and testing
 '''
-TRAIN_BATCH_SZ = 300  # Batch size for training set
-TEST_BATCH_SZ  = 75   # Batch size for testing set
-MAX_X          = 50   # Maximum value for x for y = x^2
-DELTA_Y        = 100  # Maximum that y can diverge from x^2
+TRAIN_BATCH_SZ = 300 # Batch size for training set
+TEST_BATCH_SZ  = 75  # Batch size for testing set
+
+MAX_X   = 50            # Maximum value for x for y = x^2     (training / basic test)
+DELTA_Y = 10            # Maximum that y can diverge from x^2 (training / basic test)
+
+FANCY_TEST_MAX_X = 15   # Maximum value of x for y = x^2            (fancy test)
+FANCY_TEST_STEP  = 0.5  # Granularity of the fancy test testing set (fancy test)
 
 DIM_IN     = 1     # Input dimension            (1, for the value of x)
 DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
 DIM_OUT    = 1     # Output dimension           (1, for the NN's estimate of x^2)
 
 LEARN_RATE = 0.02  # Learning rate of NN
-EPOCHS     = 40    # Maximum allowed number of training iterations for NN
+EPOCHS     = 40   # Maximum allowed number of training iterations for NN
 
 
 
@@ -121,7 +125,6 @@ def test(net, test_set):
             y  = data[1] # Value [ y ] for output to be compared to
             x2 = data[2] # Label [ x^2 ]
 
-            # TODO Make these diffs make more sense
             output = net(x.view(-1, DIM_IN))
             diff   = abs((output.item() - x2.item())/x2.item()) * 100
             diffs.append(diff)
@@ -171,29 +174,6 @@ def test(net, test_set):
 
 
 '''
-TODO description
-'''
-def print_set(set):
-    print('yeet')
-
-
-'''
-TODO description
-'''
-def fancy_test(net):
-    print('implement me')
-
-
-
-'''
-TODO description
-'''
-def fancy_plot(before_results, after_results):
-    print('implement me')
-
-
-
-'''
 Generates a batch_size long tensor with random values
 for x, y, (inputs) and x^2 (label)
 - range for x is [-max_x, max_x]
@@ -222,18 +202,87 @@ def generate_random_set(batch_size, max_x, delta_y):
 
 
 '''
-Generates an (x * y)-long tensor with the values
+Generates a tensor with the values
 representing points on the x-y plane.
 - range for x is [-max_x, max_x]
 - range for y is [0, max_x ^2]
-- step is the width (granularity) between points on the plane
-  for both the x and y axes
+- step is the width (granularity) between points on the plane for both axes
 '''
 def generate_orderly_set(max_x, step = 0.1):
     xvals  = np.arange(-max_x, max_x + step, step)
     yvals  = np.arange(0, max_x**2 + step, step)
     points = torch.Tensor(list(itertools.product(xvals, yvals)))
     return points
+
+
+
+'''
+Generates a set of points using generate_orderly_set, then
+runs the neural net through each of them, labelling it with...
+- 1, if y > NN's estimate of x2
+- 0, if y <= NN's estimate of x2
+
+Returns the sets as a list with objects of the form [x, y, label]
+'''
+def fancy_test(net, max_x, step):
+    test_set = generate_orderly_set(max_x, step)
+    results = []
+
+    with torch.no_grad():
+        for data in test_set:
+            x  = data[0] # input [ x ]
+            y  = data[1] # value [ y ] 
+
+            output = net(x.view(-1, DIM_IN))
+
+            if y > output.item():
+                results.append([x.item(), y.item(), 1]) # Output is positive
+            else:
+                results.append([x.item(), y.item(), 0])  # Output is negative
+
+    return results
+
+
+
+
+'''
+Plots two graphs with an overlay of the actual function y = x^2.
+
+If y > the NN's estimate of x2, it is plotted as a green point
+If y < the NN's estimate of x2, it is plotted as a blue point
+
+The graph's domain is [-max_x, max_x]
+The graph's range is [0, (max_x)^2]
+'''
+def fancy_plot(before_results, after_results, max_x):
+    plt.figure()
+
+    x = np.linspace(-max_x, max_x, 500)
+    y = x**2
+
+    # Plot the test results before training
+    plt.subplot(1, 2, 1)
+    plt.scatter(x = [item[0] for item in before_results], y = [item[1] for item in before_results], c = [item[2] for item in before_results], cmap = 'winter')
+    plt.title('Before training')
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+    plt.xlim([-max_x, max_x])
+    plt.ylim([0, max_x**2])
+    plt.plot(x, y, 'r')
+
+    # Plot the test results after training
+    plt.subplot(1, 2, 2)
+    plt.scatter(x = [item[0] for item in after_results], y = [item[1] for item in after_results], c = [item[2] for item in after_results], cmap = 'winter')
+    plt.title('After training')
+    plt.xlabel('x')
+    plt.ylabel('y')
+
+    plt.xlim([-max_x, max_x])
+    plt.ylim([0, max_x**2])
+    plt.plot(x, y, 'r')
+
+    plt.show()
 
 
 
@@ -245,8 +294,6 @@ test_set  = generate_random_set(TEST_BATCH_SZ, MAX_X, DELTA_Y)
 
 net = Net()
 
-myset = generate_orderly_set(5, 0.1)
-
 print('\nNet: ', net)
 print('\nTraining Set: ', train_set)
 print('\nTesting Set: ', test_set)
@@ -254,10 +301,13 @@ print()
 
 print('\n--- Before training: ---')
 test(net, test_set)
+before_results = fancy_test(net, FANCY_TEST_MAX_X, FANCY_TEST_STEP)
 
 print("\n--- Training now: ---\n")
 train(net, train_set)
 
 print("\n--- After training: ---")
 test(net, test_set)
-# fancy_test(net)
+after_results = fancy_test(net, FANCY_TEST_MAX_X, FANCY_TEST_STEP)
+
+fancy_plot(before_results, after_results, FANCY_TEST_MAX_X)
