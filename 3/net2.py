@@ -27,20 +27,20 @@ import torch.optim as optim
 import random          # Python dependency
 
 
-
 '''
 Constants for the net, training, and testing
 '''
-TRAIN_BATCH_SZ = 200  # Batch size for train / test sets
-TEST_BATCH_SZ  = 10
-MAX_X_VALUE    = 50   # Maximum value for x for y = x^2
+TRAIN_BATCH_SZ = 300  # Batch size for training set
+TEST_BATCH_SZ  = 75   # Batch size for testing set
+MAX_X          = 50   # Maximum value for x for y = x^2
+DELTA_Y        = 100  # Maximum that y can diverge from x
 
-DIM_IN     = 1     # Input dimension        (1, for the value of x)
+DIM_IN     = 1     # Input dimension            (1, for the value of x)
 DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
-DIM_OUT    = 1     # Output dimension       (1, for the value of y = x^2)
+DIM_OUT    = 1     # Output dimension           (1, for the NN's estimate of x^2)
 
 LEARN_RATE = 0.02  # Learning rate of NN
-EPOCHS     = 20    # Maximum allowed number of training iterations for NN
+EPOCHS     = 100   # Maximum allowed number of training iterations for NN
 
 
 
@@ -78,17 +78,20 @@ def train(net, train_set):
         epoch = epoch + 1
 
         for data in train_set:
-            sample = data[:1]
-            label  = data[1:]
+            # data = [ x, y, x^2 ]
 
-            output = net(sample.view(-1, 1))            # Run the NN on the value
-            loss   = F.smooth_l1_loss(output[0], label) # Calculate how incorrect the NN was
+            x  = data[:1] # sample [ x ]
+            x2 = data[2:] # label  [ x^2 ]
+
+            output = net(x.view(-1, DIM_IN))            # Run the NN on the value
+            loss   = F.smooth_l1_loss(output[0], x2) # Calculate how incorrect the NN was
 
             optimizer.zero_grad() # Start gradient at zero
             loss.backward()       # Backward propagate the loss
             optimizer.step()      # Adjust the weights based on the backprop
 
-        print(f'Epoch #{str(epoch).ljust(2)} loss: {round(loss.item(), 3)}')
+        if(epoch % 5 == 0):
+            print(f'Epoch #{str(epoch).ljust(2)} loss: {round(loss.item(), 3)}')
 
 
 
@@ -97,27 +100,76 @@ Basic test of the neural net
 '''
 def test(net, test_set):
 
+    print('x         | y         | x2 NN     | x2 label  | y vs x2 NN | y vs x2 label | correct?')
+    print('----------+-----------+-----------+-----------+------------+---------------+---------')
+
     diffs = []
+    num_correct = 0
+
+    num_positive_nn = 0 # Number of y's that were greater than their NN's estimate of x^2
+    num_negative_nn = 0 # Number of y's that were less than their NN's estimate of x^2
+
+    num_positive_x2 = 0 # Number of y's that were greater than their x^2 label
+    num_negative_x2 = 0 # Number of y's that were less than their x^2 label
 
     with torch.no_grad():
         for data in test_set:
+            # data = [ x, y, x^2 ]
 
-            sample = data[0]
-            label  = data[1]
-            output = net(sample.view(-1, DIM_IN))
-            diff   = abs((output.item() - label.item())/label.item()) * 100
+            x  = data[0] # Input [ x ]
+            y  = data[1] # Value [ y ] for output to be compared to
+            x2 = data[2] # Label [ x^2 ]
+
+            # TODO Make these diffs make more sense
+            output = net(x.view(-1, DIM_IN))
+            diff   = abs((output.item() - x2.item())/x2.item()) * 100
             diffs.append(diff)
 
-            print(f'\ninput  : {round(sample.item(), 3)}')
-            print(f'output : {round(output.item(), 3)}')
-            print(f'actual : {round(label.item(), 3)}')
-            print(f'% diff : {round(diff, 3)}%')
+            # Determine strings for y vs x2 columns
+            if y > output.item():
+                nn_str = '+ (y > x2)'
+                num_positive_nn = num_positive_nn + 1
+            else:
+                nn_str = '- (y < x2)'
+                num_negative_nn = num_negative_nn + 1
+
+            if y > x2.item():
+                x2_str = '+ (y > x2)'
+                num_positive_x2 = num_positive_x2 + 1
+            else:
+                x2_str = '- (y < x2)'
+                num_negative_x2 = num_negative_x2 + 1
+
+            # Detertime string for last column
+            if nn_str == x2_str:
+                correct_str = 'yes'
+                num_correct = num_correct + 1
+            else:
+                correct_str = 'no'
+
+            print(f'{str(round(x.item(), 3)).ljust(9)} | {str(round(y.item(),3)).ljust(9)} | {str(round(output.item(), 3)).ljust(9)} | {str(round(x.item()**2, 3)).ljust(9)} | {nn_str.ljust(10)} | {x2_str.ljust(13)} | {correct_str}')
     
+    pct_correct = round(num_correct/len(diffs) * 100, 3)
     med_diff = round(np.median(diffs), 3)
     avg_diff = round(np.average(diffs), 3)
-    print(f'\nmedian  % diff : {med_diff}%')
-    print(f'average % diff : {avg_diff}%')
 
+    print()
+    print(f'# tested  : {len(diffs)}')
+    print(f'# correct : {num_correct}')
+    print()
+    print(f'# of y > x2 label: {num_positive_x2}')
+    print(f'# of y < x2 label: {num_negative_x2}')
+    print()
+    print(f'# of y > x2 NN: {num_positive_nn}')
+    print(f'# of y < x2 NN: {num_negative_nn}')
+    print()
+    print(f'% correct guess : {pct_correct}%')
+    print(f'% x2 NN and label diff (median) : {med_diff}%')
+    print(f'% x2 NN and label diff (average): {avg_diff}%')
+
+
+def print_set(set):
+    print('yeet')
 
 
 '''
@@ -129,19 +181,29 @@ TODO test again and graph using MatPlotLib
 
 '''
 Generates a batch_size long tensor with the values
-for x and x^2, with the range for x being [-max_x, max_x]
+for x, y, (inputs) and x^2 (label)
+- range for x is [-max_x, max_x]
+- range for y is [x^2 - delta_y, x^2 + delta_y]
 '''
-def generate_set(batch_size, max_x):
+def generate_set(batch_size, max_x, delta_y):
     RAND_STEP = 0.001 # The granularity of the values in the test set
-    set = torch.zeros(batch_size, 2, dtype=torch.float32)
+    set = torch.zeros(batch_size, 3, dtype=torch.float32)
 
     for i in range (0, batch_size):
+
         # Get a random value for x in the range [-max_x, max_x]
         x = float(random.randrange(max_x * -1 / RAND_STEP, max_x / RAND_STEP))
         x = x * RAND_STEP
 
-        set[i][0] = x
-        set[i][1] = x**2
+        # Get a random value for y in the range [ x^2 - delta_y, x^2 + delta_y ]
+        y = float(random.randrange(delta_y / RAND_STEP * -1, delta_y / RAND_STEP))
+
+        y = x**2 + (y * RAND_STEP)
+
+        set[i][0] = x     # Input 1
+        set[i][1] = y     # Input 2
+        set[i][2] = x**2  # Label
+
     return set
 
 
@@ -149,8 +211,8 @@ def generate_set(batch_size, max_x):
 '''
 Actual code (not functions) begins here
 '''
-train_set = generate_set(TRAIN_BATCH_SZ, MAX_X_VALUE)
-test_set  = generate_set(TEST_BATCH_SZ, MAX_X_VALUE)
+train_set = generate_set(TRAIN_BATCH_SZ, MAX_X, DELTA_Y)
+test_set  = generate_set(TEST_BATCH_SZ, MAX_X, DELTA_Y)
 
 net = Net()
 
