@@ -31,21 +31,21 @@ import itertools
 '''
 Constants for the net, training, and testing
 '''
-TRAIN_BATCH_SZ = 300 # Batch size for training set
-TEST_BATCH_SZ  = 75  # Batch size for testing set
+TRAIN_BATCH_SZ = 100 # Batch size for training set
+TEST_BATCH_SZ  = 50  # Batch size for basic testing set
 
-MAX_X   = 15            # Maximum value for x for y = x^2     (training / basic test)
+MAX_X   = 10            # Maximum value for x for y = x^2     (training / basic test)
 DELTA_Y = 10            # Maximum that y can diverge from x^2 (training / basic test)
 
-FANCY_TEST_MAX_X = 15   # Maximum value of x for y = x^2            (fancy test)
-FANCY_TEST_STEP  = 0.5  # Granularity of the fancy test testing set (fancy test)
+FANCY_TEST_MAX_X = 10   # Maximum value of x for y = x^2            (fancy test)
+FANCY_TEST_STEP  = 0.25  # Granularity of the fancy test testing set (fancy test)
 
 DIM_IN     = 1     # Input dimension            (1, for the value of x)
 DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is this, squared)
 DIM_OUT    = 1     # Output dimension           (1, for the NN's estimate of x^2)
 
 LEARN_RATE = 0.02  # Learning rate of NN
-EPOCHS     = 40   # Maximum allowed number of training iterations for NN
+EPOCHS     = 30   # Maximum allowed number of training iterations for NN
 
 
 
@@ -294,20 +294,21 @@ test_set  = generate_random_set(TEST_BATCH_SZ, MAX_X, DELTA_Y)
 
 net = Net()
 
-print('\nNet: ', net)
-print('\nTraining Set: ', train_set)
-print('\nTesting Set: ', test_set)
+print('\n--- Net: ---\n', net)
+print('\n--- Training Set: ---\n', train_set)
+print('\n--- Testing Set: ---\n', test_set)
 print()
 
-print('\n--- Before training: ---')
+print('\n--- Testing data before training... ---')
 test(net, test_set)
 before_results = fancy_test(net, FANCY_TEST_MAX_X, FANCY_TEST_STEP)
 
-print("\n--- Training now: ---\n")
+print("\n--- Training now... ---")
 train(net, train_set)
 
-print("\n--- After training: ---")
+print("\n--- Testing data after training... ---")
 test(net, test_set)
 after_results = fancy_test(net, FANCY_TEST_MAX_X, FANCY_TEST_STEP)
 
+print('\n--- Plotting test results before and after... ---')
 fancy_plot(before_results, after_results, FANCY_TEST_MAX_X)
