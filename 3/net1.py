@@ -180,14 +180,12 @@ def fancy_plot(before_results, after_results):
 '''
 Actual code (not functions) begins here
 '''
-test_set  = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
 train_set = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
 
 net = Net()
 
 print('\n--- Net: ---\n', net)
 print('\n--- Training set: ---\n', train_set) 
-print('\n--- Testing set: ---\n', test_set)
 
 print('\n--- Testing data before training... ---')
 before_results = fancy_test(net)

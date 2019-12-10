@@ -34,8 +34,8 @@ Constants for the net, training, and testing
 TRAIN_BATCH_SZ = 100 # Batch size for training set
 TEST_BATCH_SZ  = 50  # Batch size for basic testing set
 
-MAX_X   = 10            # Maximum value for x for y = x^2     (training / basic test)
-DELTA_Y = 10            # Maximum that y can diverge from x^2 (training / basic test)
+MAX_X   = 10         # Maximum value for x for y = x^2     (training / basic test)
+DELTA_Y = 10         # Maximum that y can diverge from x^2 (training / basic test)
 
 FANCY_TEST_MAX_X = 10   # Maximum value of x for y = x^2            (fancy test)
 FANCY_TEST_STEP  = 0.25  # Granularity of the fancy test testing set (fancy test)
@@ -45,7 +45,7 @@ DIM_H      = 4     # 1st hidden layer dimension (2nd hidden layer dimension is t
 DIM_OUT    = 1     # Output dimension           (1, for the NN's estimate of x^2)
 
 LEARN_RATE = 0.02  # Learning rate of NN
-EPOCHS     = 30   # Maximum allowed number of training iterations for NN
+EPOCHS     = 30    # Number of training iterations for NN
 
 
 
@@ -88,7 +88,7 @@ def train(net, train_set):
             x  = data[:1] # sample [ x ]
             x2 = data[2:] # label  [ x^2 ]
 
-            output = net(x.view(-1, DIM_IN))            # Run the NN on the value
+            output = net(x.view(-1, DIM_IN))         # Run the NN on the value
             loss   = F.smooth_l1_loss(output[0], x2) # Calculate how incorrect the NN was
 
             optimizer.zero_grad() # Start gradient at zero
