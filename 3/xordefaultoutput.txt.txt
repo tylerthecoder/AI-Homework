@@ -1,0 +1,44 @@
+--- Net: ---
+ Net(\\
+  (fc1): Linear(in_features=2, out_features=16, bias=True)
+  (fc2): Linear(in_features=16, out_features=16, bias=True)
+  (fc3): Linear(in_features=16, out_features=2, bias=True)
+)
+
+--- Training set: ---
+ tensor([[0., 0., 1., 0.],
+        [0., 1., 0., 1.],
+        [1., 0., 0., 1.],
+        [1., 1., 1., 0.]])
+
+--- Testing set: ---
+ tensor([[0., 0., 1., 0.],
+        [0., 1., 0., 1.],
+        [1., 0., 0., 1.],
+        [1., 1., 1., 0.]])
+
+--- Testing data before training... ---
+
+--- Training now... ---
+Epoch #1  loss: 0.453
+Epoch #2  loss: 0.175
+Epoch #3  loss: 0.203
+Epoch #4  loss: 0.247
+Epoch #5  loss: 0.288
+Epoch #6  loss: 0.298
+Epoch #7  loss: 0.264
+Epoch #8  loss: 0.219
+Epoch #9  loss: 0.189
+Epoch #10 loss: 0.18
+Epoch #11 loss: 0.183
+Epoch #12 loss: 0.18
+Epoch #13 loss: 0.154
+Epoch #14 loss: 0.113
+Epoch #15 loss: 0.078
+Epoch #16 loss: 0.056
+Epoch #17 loss: 0.018
+Epoch #18 loss: 0.004
+
+--- Testing data after training... ---
+
+--- Plotting test results before and after... ---

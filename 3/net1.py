@@ -111,7 +111,7 @@ the output from the NN's one-hot-vector classifier...
 
 Returns the set as a list of objects of the form [a, b, label]
 '''
-def fancy_test(net, title):
+def fancy_test(net):
 
     test_set = generate_orderly_set()
     results = []
@@ -144,7 +144,7 @@ def fancy_plot(before_results, after_results):
     # Plot the test results before training
     plt.subplot(1, 2, 1)
     plt.scatter(x = [item[0] for item in before_results], y = [item[1] for item in before_results], c = [item[2] for item in before_results], cmap = 'winter')
-    plt.title('Before trianing')
+    plt.title('Before training')
     plt.xlabel('A')
     plt.ylabel('B')
 
@@ -180,22 +180,21 @@ def fancy_plot(before_results, after_results):
 '''
 Actual code (not functions) begins here
 '''
-test_set  = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
 train_set = torch.tensor([[0,0,1,0], [0,1,0,1], [1,0,0,1], [1,1,1,0]], dtype=torch.float32)
 
 net = Net()
 
-print('\nNet: ', net)
-print('\nTraining Set:\n', train_set) 
-print('\nTesting Set:\n', test_set)
+print('\n--- Net: ---\n', net)
+print('\n--- Training set: ---\n', train_set) 
 
-print("\n--- Before training: ---")
-before_results = fancy_test(net, 'Before training')
+print('\n--- Testing data before training... ---')
+before_results = fancy_test(net)
 
-print("\n--- Training now: ---\n")
+print('\n--- Training now... ---')
 train(net, train_set)
 
-print("\n--- After training: ---")
-after_results = fancy_test(net, 'After training')
+print('\n--- Testing data after training... ---')
+after_results = fancy_test(net)
 
+print('\n--- Plotting test results before and after... ---')
 fancy_plot(before_results, after_results)
