@@ -5,7 +5,6 @@ class Generation {
 
   async train(draw) {
     const newPool = await this.pool.fight(draw);
-    console.log(newPool);
     this.pool = new Pool(newPool);
   }
 

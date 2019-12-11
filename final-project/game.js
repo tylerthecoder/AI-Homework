@@ -35,7 +35,6 @@ class Game {
   }
 
   keyboardControls() {
-    console.log(keys);
     if (keys.has("ArrowUp")) {
       playerA_Y -= PADDLE_SPEED;
     }
@@ -149,12 +148,10 @@ class Game {
     this.update();
     this.keyboardControls();
     this.draw();
-    const netVal = net.play(PADDLE_OFFSET + PADDLE_WIDTH, playerB_Y);
+    const netVal = net.play(sw - (PADDLE_OFFSET + PADDLE_WIDTH), playerB_Y);
     playerB_Y += netVal === -1 ? -PADDLE_SPEED : netVal === 0 ? 0 : PADDLE_SPEED;
 
     const res = this.constrainValues();
-
-    console.log(res);
 
     if (res === 0) {
       setTimeout(() => {
