@@ -103,7 +103,7 @@ class Game {
       ballX = PADDLE_OFFSET + PADDLE_WIDTH + BALL_RADIUS + 1;
       if (net1) {
         net1.score++;
-        document.getElementById('leftScore').innerHTML = net1.score;
+        document.getElementById('leftScore').innerHTML = Number(document.getElementById('leftScore').innerHTML) + 1;
       }
     }
 
@@ -117,7 +117,7 @@ class Game {
       ballX = sw - (BALL_RADIUS + PADDLE_OFFSET + PADDLE_WIDTH + 1);
       if (net2) {
         net2.score++;
-        document.getElementById('rightScore').innerHTML = net2.score;
+        document.getElementById('rightScore').innerHTML =  Number(document.getElementById('rightScore').innerHTML) + 1;
       }
     }
 
@@ -148,6 +148,11 @@ class Game {
   }
 
   playAgainst(net) {
+
+    // Start scores at 0
+    document.getElementById('leftScore').innerHTML = 0;
+    document.getElementById('rightScore').innerHTML = 0;
+
     this.update();
     this.keyboardControls();
     this.draw();
@@ -155,6 +160,9 @@ class Game {
     playerB_Y += netVal === -1 ? -PADDLE_SPEED : netVal === 0 ? 0 : PADDLE_SPEED;
 
     const res = this.constrainValues();
+
+    if (res !== 0)
+      console.log(res);
 
     if (res === 0) {
       setTimeout(() => {
