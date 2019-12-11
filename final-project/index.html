@@ -13,14 +13,22 @@
       position: absolute;
       top: 0;
       left: 0;
+      background-color: black;
     }
 
     div {
       position: absolute;
+      align-content: center;
       width: 100%;
       height: 50px;
       bottom: 0;
       background-color: #333;
+    }
+
+    a {
+      height: 50px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: white;
     }
   </style>
   <script src='game.js'></script>
@@ -31,10 +39,26 @@
 
 <body>
   <canvas id="canvas"></canvas>
-  <div id="buttons"></div>
+  <div id="buttons">
+    <a>Train: </a>
+    <input id='numInput' type='number' />
+    <a>Visible? </a>
+    <input id='visCheckbox' type='checkbox' />
+    <button onclick="train()">Train</button>
+    <button onclick="playAgainst()">Play against</button>
+
+  </div>
   <script>
     const game = new Game();
     const gen = new Generation();
+
+    const train = () => {
+      console.log(document.getElementById('numInput').value);
+      console.log(document.getElementById('visCheckbox').checked);
+      gen.trainRep(document.getElementById('numInput').value, document.getElementById('visCheckbox').checked);
+    }
+
+    const playAgainst = () => { gen.playAgainst() }
   </script>
 </body>
 

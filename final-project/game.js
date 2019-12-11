@@ -48,6 +48,7 @@ class Game {
 
     ctx.beginPath();
     ctx.rect(PADDLE_OFFSET, playerA_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
+    ctx.fillStyle = 'white';
     ctx.fill();
 
     ctx.beginPath();
