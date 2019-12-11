@@ -47,8 +47,8 @@ class Game {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.beginPath();
-    ctx.rect(PADDLE_OFFSET, playerA_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
     ctx.fillStyle = 'white';
+    ctx.rect(PADDLE_OFFSET, playerA_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
     ctx.fill();
 
     ctx.beginPath();
@@ -99,7 +99,7 @@ class Game {
       ballX - BALL_RADIUS < PADDLE_OFFSET + PADDLE_WIDTH &&
       ballX + BALL_RADIUS > PADDLE_OFFSET + PADDLE_WIDTH
     ) {
-      ballVx *= -1.01;
+      ballVx *= -1.05;
       ballX = PADDLE_OFFSET + PADDLE_WIDTH + BALL_RADIUS + 1;
       if (net1) {
         net1.score++;
@@ -112,7 +112,7 @@ class Game {
       ballX + BALL_RADIUS > sw - (PADDLE_OFFSET + PADDLE_WIDTH) &&
       ballX - BALL_RADIUS < sw - (PADDLE_OFFSET + PADDLE_WIDTH)
     ) {
-      ballVx *= -1.01;
+      ballVx *= -1.05;
       ballX = sw - (BALL_RADIUS + PADDLE_OFFSET + PADDLE_WIDTH + 1);
       if (net2) {
         net2.score++;

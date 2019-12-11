@@ -27,12 +27,7 @@ class Pool {
     for (let i = 0; i < POOL_SIZE / 2; i++) {
       const net1 = this.pool[2 * i];
       const net2 = this.pool[2 * i + 1];
-      const [winner, count] = await game.pvp(net1, net2, draw);
-      if (winner === 1) {
-        newPool.push(net1);
-      } else {
-        newPool.push(net1);
-      }
+      await game.pvp(net1, net2, draw);
     }
 
     this.sortPool();
@@ -44,7 +39,6 @@ class Pool {
     // only add the top 90% performers
     for (let i = 0; i < Math.ceil(.9 * POOL_SIZE); i++) {
       const amountToAdd = Math.floor((this.pool[i].score / hightestScore) * maxAmountToAdd);
-      console.log(amountToAdd);
       const addMembers = Array.from(Array(amountToAdd)).fill(this.pool[i]);
       newPool.push(...addMembers);
     }
