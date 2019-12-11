@@ -15,7 +15,7 @@ const PADDLE_WIDTH = 30;
 const PADDLE_OFFSET = 50;
 const BALL_RADIUS = 10;
 
-const keys = new Set();
+const keys = new Set(); // Keeps track of active key presses
 window.addEventListener("keydown", e => keys.add(e.key));
 window.addEventListener("keyup", e => keys.delete(e.key));
 
@@ -24,7 +24,7 @@ class Game {
     const canvas = document.getElementById("canvas");
     const setCanvasDims = () => {
       sw = window.innerWidth;
-      sh = window.innerHeight;
+      sh = window.innerHeight - 50;
       canvas.width = sw;
       canvas.height = sh;
     };
