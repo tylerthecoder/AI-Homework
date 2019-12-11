@@ -3,6 +3,10 @@ class Generation {
     this.pool = new Pool();
   }
 
+  async watch() {
+    this.pool.fight();
+  }
+
   async train(draw) {
     const newPool = await this.pool.fight(draw);
     this.pool = new Pool(newPool);

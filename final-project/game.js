@@ -165,8 +165,8 @@ class Game {
     ballY = sh / 2;
     playerA_Y = 0;
     playerB_Y = 0;
-    ballVx = 5 * (Math.random() > 0.5 ? 1 : -1);
-    ballVy = 5 * (Math.random() > 0.5 ? 1 : -1);
+    ballVx = 5 * (Math.random() > 0.5 ? Math.random() + .5 : -(Math.random() + .5));
+    ballVy = 5 * (Math.random() > 0.5 ? Math.random() + .5 : -(Math.random() + .5));
   }
 
   async pvp(net1, net2, drawFight) {

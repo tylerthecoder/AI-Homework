@@ -37,9 +37,15 @@ class Pool {
 
     this.sortPool();
 
+    const hightestScore = this.pool[0].score;
+
+    const maxAmountToAdd = 1000;
+
     // only add the top 90% performers
     for (let i = 0; i < Math.ceil(.9 * POOL_SIZE); i++) {
-      const addMembers = Array.from(Array(POOL_SIZE - i)).fill(this.pool[i])
+      const amountToAdd = Math.floor((this.pool[i].score / hightestScore) * maxAmountToAdd);
+      console.log(amountToAdd);
+      const addMembers = Array.from(Array(amountToAdd)).fill(this.pool[i]);
       newPool.push(...addMembers);
     }
 
