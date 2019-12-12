@@ -9,6 +9,7 @@ class Generation {
   }
 
   async train(draw) {
+    console.log("Training Generation");
     const newPool = await this.pool.fight(draw);
     this.pastGenerations.push(this.pool);
     this.pool = new Pool(newPool);

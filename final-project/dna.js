@@ -14,6 +14,10 @@ class DNA {
     }
   }
 
+  copy() {
+    return new DNA(this.genes);
+  }
+
   calculateValue(inputs) {
     return Array.from(Array(HIDDEN_LAYER_SIZE))
       .map((_, hiddenLayerIndex) => {
@@ -38,7 +42,8 @@ class DNA {
     const newGenes = this.genes
       .slice(0, flipIndex)
       .concat(net.genes.slice(flipIndex));
-    return new DNA(newGenes);
+    const newNet = new DNA(newGenes);
+    return newNet;
   }
 
   mate2(net) {
@@ -48,7 +53,17 @@ class DNA {
       }
       return gene;
     })
-    return new DNA(newGenes);
+    const newNet = new DNA(newGenes);
+    return newNet;
+  }
+
+  mutate() {
+    this.genes = this.genes.map(gene => {
+      if (Math.random() > .2) {
+        return Math.random() * 2 - 1
+      }
+      return gene;
+    })
   }
 
   play(px, py) {

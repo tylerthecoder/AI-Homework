@@ -8,6 +8,8 @@ let ballVx = 10;
 let ballVy = 10;
 let playerA_Y = 0;
 let playerB_Y = 0;
+let playerA_vy = 0;
+let playerB_vy = 0;
 
 const PADDLE_SPEED = 15;
 const PADDLE_HEIGHT = 130;
@@ -36,10 +38,11 @@ class Game {
 
   keyboardControls() {
     if (keys.has("ArrowUp")) {
-      playerA_Y -= PADDLE_SPEED;
-    }
-    if (keys.has("ArrowDown")) {
-      playerA_Y += PADDLE_SPEED;
+      playerA_vy = -PADDLE_SPEED;
+    } else if (keys.has("ArrowDown")) {
+      playerA_vy = PADDLE_SPEED;
+    } else {
+      playerA_vy = 0;
     }
   }
 
@@ -68,14 +71,15 @@ class Game {
   update() {
     ballX += ballVx;
     ballY += ballVy;
+    playerA_Y += playerA_vy;
+    playerB_Y += playerB_vy;
   }
 
   updateWithAi(net1, net2) {
-    this.update();
     const net1Val = net1.play(PADDLE_OFFSET + PADDLE_WIDTH, playerA_Y);
     const net2Val = net2.play(sw - (PADDLE_OFFSET + PADDLE_WIDTH), playerB_Y);
-    playerA_Y += net1Val === -1 ? -PADDLE_SPEED : net1Val === 0 ? 0 : PADDLE_SPEED;
-    playerB_Y += net2Val === -1 ? -PADDLE_SPEED : net2Val === 0 ? 0 : PADDLE_SPEED;
+    playerA_vy = net1Val === -1 ? -PADDLE_SPEED : net1Val === 0 ? 0 : PADDLE_SPEED;
+    playerB_vy = net2Val === -1 ? -PADDLE_SPEED : net2Val === 0 ? 0 : PADDLE_SPEED;
   }
 
   constrainValues(net1, net2) {
@@ -100,6 +104,7 @@ class Game {
       ballX + BALL_RADIUS > PADDLE_OFFSET + PADDLE_WIDTH
     ) {
       ballVx *= -1.05;
+      // ballVy += (playerA_vy / PADDLE_SPEED) * 5
       ballX = PADDLE_OFFSET + PADDLE_WIDTH + BALL_RADIUS + 1;
       if (net1) {
         net1.score++;
@@ -114,6 +119,7 @@ class Game {
       ballX - BALL_RADIUS < sw - (PADDLE_OFFSET + PADDLE_WIDTH)
     ) {
       ballVx *= -1.05;
+      // ballVy += (playerB_vy / PADDLE_SPEED) * 5
       ballX = sw - (BALL_RADIUS + PADDLE_OFFSET + PADDLE_WIDTH + 1);
       if (net2) {
         net2.score++;
@@ -124,23 +130,19 @@ class Game {
     // collision detection for walls
     if (ballY > sh - BALL_RADIUS) {
       ballY = sh - (BALL_RADIUS + 1);
-      ballVy *= -1;
+      ballVy *= -1.01;
     }
     if (ballY < BALL_RADIUS) {
       ballY = BALL_RADIUS + 1;
-      ballVy *= -1;
+      ballVy *= -1.01;
     }
 
     // A lost
     if (ballX < BALL_RADIUS) {
-      ballX = BALL_RADIUS;
-      ballVx *= -1;
       return -1;
     }
     // B lost
     if (ballX > sw - BALL_RADIUS) {
-      ballX = sw - BALL_RADIUS;
-      ballVx *= -1;
       return 1;
     }
 
@@ -148,11 +150,11 @@ class Game {
   }
 
   playAgainst(net) {
-    this.update();
-    this.keyboardControls();
     this.draw();
+    this.keyboardControls();
     const netVal = net.play(sw - (PADDLE_OFFSET + PADDLE_WIDTH), playerB_Y);
-    playerB_Y += netVal === -1 ? -PADDLE_SPEED : netVal === 0 ? 0 : PADDLE_SPEED;
+    playerB_vy = netVal === -1 ? -PADDLE_SPEED : netVal === 0 ? 0 : PADDLE_SPEED;
+    this.update();
 
     const res = this.constrainValues();
 
@@ -177,6 +179,7 @@ class Game {
     const step = () => {
       count++;
       this.updateWithAi(net1, net2);
+      this.update();
       return this.constrainValues(net1, net2);
     };
 
